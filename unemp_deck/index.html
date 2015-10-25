@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Unemployment Dataset Map Generator</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Unemployment Dataset Map Generator">
+  <meta name="author" content="Gary W. Deinert">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Unemployment Dataset Map Generator</h1>
+    <h2>Shown by county in continental US</h2>
+    <p>Gary W. Deinert<br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Unemployment Dataset Mapping Project</h2>
+  </hgroup>
+  <article data-timings="">
+    <h3>Learning to create shiny interactive maps with the &#39;maps&#39; package and the &#39;unemp&#39; dataset</h3>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>Program designed to provide user interactivity in three areas:</h2>
+  </hgroup>
+  <article data-timings="">
+    <h3>- Choose the state(s) to view</h3>
+
+<h3>- Select the range of unemployment as % of population, using UI slider</h3>
+
+<h3>- Make your own map title</h3>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Packages:</h2>
+  </hgroup>
+  <article data-timings="">
+    <h3>- shiny          presenter package</h3>
+
+<h3>- maps           create the county-by-county and state maps for US</h3>
+
+<h3>- mapproj        needed for certain coordinate handling for maps pkg</h3>
+
+<h3>- RColorBrewer   selected map color package</h3>
+
+<h3>- plyr           dataframe manipulation</h3>
+
+<h2>Datasets:</h2>
+
+<h3>- countyMapEnv   geographical coordinates for county boundaries</h3>
+
+<h3>- county.fips    link Federal Info Processing Std code to county names</h3>
+
+<h3>- stateMapEnv    geographical coordinates for state boundaries</h3>
+
+<h3>- unemp          provides the actual unemployment figures</h3>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>R code overview</h2>
+  </hgroup>
+  <article data-timings="">
+    <h2>- Reactive functions:</h2>
+
+<h3>getdata(), getrange(), gettitle(), getstates()</h3>
+
+<h4>All initiated by single &quot;Update&quot; button at User Interface</h4>
+
+<h2>- Non-reactive functions:</h2>
+
+<h4>- distPlot() - Generates the map for selected states, % range, user title</h4>
+
+<h4>- summarydf() - Summarize population, avg unemployment, and county count</h4>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h2>Specific R code example: generate the map</h2>
+  </hgroup>
+  <article data-timings="">
+    <h3>Assume UI selected: states = ohio,west virginia,pennsylvania; range=8%-20%;</h3>
+
+<h3>title = &quot;OH-PA-WV Over 8% Unemployment&quot;</h3>
+
+<pre><code class="r">      map(&quot;county&quot;, regions = states.shown, col = colors[working_db$colorBuckets], 
+            fill = TRUE,resolution = 0,lty = 0, projection = &quot;polyconic&quot;)
+      title(map.title)
+      leg.txt &lt;- c(&quot;&lt;3%&quot;, &quot;3-6%&quot;, &quot;6-9%&quot;, &quot;9-12%&quot;, &quot;12-15%&quot;, &quot;15+%&quot;)
+      legend(&quot;bottomright&quot;, leg.txt, horiz = FALSE, fill = colors)
+
+      ## Add border around each county
+     map(&quot;county&quot;, regions = states.shown, col = &quot;darkgrey&quot;, fill = FALSE, add = TRUE, 
+            lty = 1, lwd = 0.2, projection = &quot;polyconic&quot;)
+</code></pre>
+
+<p><img src="assets/fig/unnamed-chunk-2-1.png" alt="plot of chunk unnamed-chunk-2"> </p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
+  <hgroup>
+    <h2>Create the datatable</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r">avg_unemp &lt;- aggregate(unemp ~ state, data=working_db,mean)
+total &lt;- aggregate(pop ~ state, data=working_db,sum)
+counties &lt;- aggregate(count ~ state, data=working_db,sum)
+summary_df &lt;- cbind(avg_unemp,total$pop,counties$count)
+
+summary_df
+</code></pre>
+
+<pre><code>##           state     unemp total$pop counties$count
+## 1          ohio 10.714773   5876843             88
+## 2  pennsylvania  8.728358   6351110             67
+## 3 west virginia  9.114545    791448             55
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-7" style="background:;">
+  <hgroup>
+    <h2>Results</h2>
+  </hgroup>
+  <article data-timings="">
+    <p><img src="assets/fig/unnamed-chunk-4-1.png" alt="plot of chunk unnamed-chunk-4"> </p>
+
+<pre><code>##           state     unemp total$pop counties$count
+## 1          ohio 10.714773   5876843             88
+## 2  pennsylvania  8.728358   6351110             67
+## 3 west virginia  9.114545    791448             55
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-8" style="background:;">
+  <hgroup>
+    <h2>Meeting project objectives</h2>
+  </hgroup>
+  <article data-timings="">
+    <h3>1. Shiny application with supporting documentation.</h3>
+
+<h4>a) Link to application: <a href="https://garys-data.shinyapps.io/census_look">https://garys-data.shinyapps.io/census_look</a></h4>
+
+<h4>b) Supporting documentation: included &quot;helppage.html&quot; as a 2nd tab panel,</h4>
+
+<h4>PLUS have helpText() above user input box on sidebar panel</h4>
+
+<h3>2. Some form of input. We have four:</h3>
+
+<h4>a) User-designated chart title (textInput),</h4>
+
+<h4>b) range of unemployment % slider (sliderInput),</h4>
+
+<h4>c) choose what states to see / calculate (selectizeInput),</h4>
+
+<h4>d) update button when selections chosen (actionButton)</h4>
+
+<h3>3. Some operation on the ui input in server.R.  Multiple. Some of them:</h3>
+
+<h4>a) re-generation of the working database based on selected states</h4>
+
+<h4>b) renewing the working databased to include only UI within selected range</h4>
+
+<h4>c) mapping/plotting of the selected states</h4>
+
+<h4>d) aggregating state unemployment average for display table</h4>
+
+<h4>e) summarizing total state population for display table</h4>
+
+<h4>f) count of counties in user-selected region, displayed within state summary</h4>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-9" style="background:;">
+  <hgroup>
+    <h2>Project Learnings</h2>
+  </hgroup>
+  <article data-timings="">
+    <h3>- Using and publising to shiny</h3>
+
+<h3>- Using and publishing on slidify</h3>
+
+<h3>- Reactivity:</h3>
+
+<h4>- Have ANY non-reactive vars in your reactive function, it doesn&#39;t react right</h4>
+
+<h4>- Reactive functions return a single value. Keep them clean.</h4>
+
+<h3>- Using browser() to troubleshoot within shiny.  (Critical.)</h3>
+
+<h3>- Use of panels, tabsets, user inputs</h3>
+
+<h3>- Integration of HTML functions into shiny projects</h3>
+
+<h3>- Working within projects:</h3>
+
+<h4>My last class in data science series, first time working with projects</h4>
+
+<h3>- Creating a user-friendly project -- this is great stuff!</h3>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Unemployment Dataset Mapping Project'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Program designed to provide user interactivity in three areas:'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Packages:'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='R code overview'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='Specific R code example: generate the map'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='Create the datatable'>
+         6
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=7 title='Results'>
+         7
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=8 title='Meeting project objectives'>
+         8
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=9 title='Project Learnings'>
+         9
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

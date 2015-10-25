@@ -1,0 +1,4 @@
+0000000000000000000000000000000000000000 8c23511d4a61b950534138a2085f408e211a0fa1 garydeinert <gary.deinert@yahoo.com> 1445779979 -0400	commit (initial): Initial commit
+8c23511d4a61b950534138a2085f408e211a0fa1 4e0c27a614906b2d16b40a1fce3fccfe9bbc0921 garydeinert <gary.deinert@yahoo.com> 1445791577 -0400	commit: Initial commit
+4e0c27a614906b2d16b40a1fce3fccfe9bbc0921 a375bdeda826c3d5474e7f2f93e309f6a8261e86 garydeinert <gary.deinert@yahoo.com> 1445792027 -0400	pull --progress --rebase --prune origin master: checkout a375bdeda826c3d5474e7f2f93e309f6a8261e86
+a375bdeda826c3d5474e7f2f93e309f6a8261e86 a375bdeda826c3d5474e7f2f93e309f6a8261e86 garydeinert <gary.deinert@yahoo.com> 1445792028 -0400	rebase finished: returning to refs/heads/master
